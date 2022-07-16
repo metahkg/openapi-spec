@@ -12,7 +12,7 @@ info:
     email: wcyat@wcyat.me
   license:
     name: AGPL-3.0-or-later
-    url: https://gitlab.com/metahkg/metahkg-server/-/blob/master/LICENSE.md
+    url: https://gitlab.com/metahkg/openapi-spec/-/blob/master/LICENSE.md
 
 externalDocs:
   url: https://gitlab.com/metahkg/metahkg-server
@@ -33,7 +33,8 @@ paths:
       tags:
         - thread
       summary: Get thread
-      description: Get a selection of comments and other data from a thread.
+      description: "Get a selection of comments and other data from a thread.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.7.1-dev/src/routes/thread/thread.ts)"
       operationId: getThread
       parameters:
         - in: path
@@ -41,9 +42,7 @@ paths:
           description: thread id
           required: true
           schema:
-            type: integer
-            format: int64
-            minimum: 1
+            $ref: "#/components/schemas/Thread/properties/id"
         - in: query
           name: page
           description: Page number. Ignored if start and end both specified.
@@ -84,7 +83,7 @@ paths:
             start default to `(page - 1) * limit + 1`"
           required: false
           schema:
-            type: string
+            type: integer
             format: int64
             minimum: 1
         - in: query
@@ -95,7 +94,7 @@ paths:
             end defaults to `page * limit`"
           required: false
           schema:
-            type: string
+            type: integer
             format: int64
             minimum: 1
       responses:
@@ -185,6 +184,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /thread/{id}/comment:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - thread
+      summary: Create comment
+      description: Create a new comment in the specified thread. Authentication is required.
+      operationId: CreateComment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  $ref: "#/components/schemas/Comment/properties/comment"
+                rtoken:
+                  $ref: "#/components/schemas/rtoken"
+                quote:
+                  nullable: true
+                  anyOf:
+                    - $ref: "#/components/schemas/Comment/properties/id"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    $ref: "#/components/schemas/Comment/properties/id"
+        "400":
+          description: "Invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: "Thread not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: "Recaptcha token invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 servers:
   - url: https://dev.metahkg.org/api
@@ -236,9 +298,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-          minimum: 1
+          $ref: "#/components/schemas/Comment/properties/id"
         removed:
           type: boolean
           enum:
@@ -250,6 +310,7 @@ components:
           type: integer
           format: int64
           minimum: 1
+          description: comment id
         user:
           description: user created the comment
           anyOf:
