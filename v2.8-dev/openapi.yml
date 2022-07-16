@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "2.7-dev"
+  version: "2.8-dev"
   title: Metahkg Api
   description:
     "The Metahkg Api is a REST api written in fastify/typescript, with MongoDB as the database.
@@ -21,10 +21,15 @@ externalDocs:
 tags:
   - name: thread
     description: thread operations
+  - name: comment
+    description: comment operations
   - name: users
     description: account operations
   - name: profile
     description: profile operations
+  - name: menu
+    description: menu operations (get list of threads based on criteria)
+
 paths:
   /thread/{id}:
     get:
@@ -34,7 +39,7 @@ paths:
         - thread
       summary: Get thread
       description: "Get a selection of comments and other data from a thread.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.7.1-dev/src/routes/thread/thread.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/thread.ts)"
       operationId: getThread
       parameters:
         - in: path
@@ -105,17 +110,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Thread"
         "400":
-          description: "Invalid request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Invalid"
         "403":
-          description: "Forbidden"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: "Thread not found"
           content:
@@ -129,7 +126,8 @@ paths:
       tags:
         - thread
       summary: Create thread
-      description: Create a thread. Authentication is required.
+      description: "Create a thread. Authentication is required.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/create.ts)"
       operationId: createThread
       requestBody:
         content:
@@ -161,17 +159,9 @@ paths:
                   id:
                     $ref: "#/components/schemas/Thread/properties/id"
         "400":
-          description: "Invalid request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Invalid"
         "401":
-          description: "Unauthorized"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Unauthorized"
         "404":
           description: "Category not found"
           content:
@@ -179,24 +169,23 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "429":
-          description: "Recaptcha token invalid"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/RecaptchaInvalid"
   /thread/{id}/comment:
     post:
       security:
         - bearerAuth: []
       tags:
-        - thread
+        - comment
       summary: Create comment
-      description: Create a new comment in the specified thread. Authentication is required.
+      description: "Create a new comment in the specified thread.
+        Authentication is required.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/create.ts)"
       operationId: CreateComment
       parameters:
         - in: path
           name: id
           required: true
+          description: thread id
           schema:
             $ref: "#/components/schemas/Thread/properties/id"
       requestBody:
@@ -224,17 +213,9 @@ paths:
                   id:
                     $ref: "#/components/schemas/Comment/properties/id"
         "400":
-          description: "Invalid request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Invalid"
         "401":
-          description: "Unauthorized"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/Unauthorized"
         "404":
           description: "Thread not found"
           content:
@@ -242,7 +223,150 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         "429":
-          description: "Recaptcha token invalid"
+          $ref: "#/components/responses/RecaptchaInvalid"
+  /thread/{id}/comment/{cid}:
+    get:
+      tags:
+        - comment
+      summary: Get comment
+      description: "Get a comment from a thread with thread id and comment id.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/comment.ts)"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: thread id
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+        - in: path
+          name: cid
+          required: true
+          description: comment id
+          schema:
+            $ref: "#/components/schemas/Comment/properties/id"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "404":
+          description: "Thread or comment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /thread/{id}/comment/{cid}/replies:
+    get:
+      tags:
+        - comment
+      summary: Get replies
+      description:
+        "Get the full comment objects of replies to the specified comment.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/replies.ts)"
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+        - in: path
+          name: cid
+          description: comment id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Comment/properties/id"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "404":
+          description: "Thread or comment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          $ref: "#/components/responses/CommentRemoved"
+  /thread/{id}/comment/{cid}/vote:
+    post:
+      tags:
+        - comment
+      security:
+        - bearerAuth: []
+      summary: Vote on comment
+      description: "Vote on a comment. Authentication is required.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/vote.ts)"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vote:
+                  $ref: "#/components/schemas/Vote"
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+        - in: path
+          name: cid
+          description: comment id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Comment/properties/id"
+      responses:
+        "200":
+          $ref: "#/components/responses/OK"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "Thread or comment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          $ref: "#/components/responses/CommentRemoved"
+        "429":
+          description: "User has already voted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /thread/check:
+    get:
+      tags:
+        - thread
+      summary: Check if a thread exists
+      description: "Check if a thread exists.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/checkExist.ts)"
+      parameters:
+        - in: query
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+      responses:
+        "200":
+          $ref: "#/components/responses/OK"
+        "404":
+          description: "Thread not found"
           content:
             application/json:
               schema:
@@ -252,6 +376,48 @@ servers:
   - url: https://dev.metahkg.org/api
 
 components:
+  responses:
+    OK:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              response:
+                type: string
+                enum:
+                  - ok
+    Invalid:
+      description: "Invalid request"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RecaptchaInvalid:
+      description: "Recaptcha token invalid"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: "Forbidden"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    CommentRemoved:
+      description: "Comment removed"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     Error:
       type: object
@@ -259,6 +425,12 @@ components:
         error:
           type: string
           description: error message
+    Vote:
+      type: string
+      description: Vote. "U" means upvote. "D" means downvote.
+      enum:
+        - "U"
+        - "D"
     User:
       type: object
       properties:
