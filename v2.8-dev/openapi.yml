@@ -143,7 +143,7 @@ paths:
                 title:
                   $ref: "#/components/schemas/Thread/properties/title"
                 comment:
-                  $ref: "#/components/schemas/Comment/properties/comment"
+                  $ref: "#/components/schemas/CommentC/properties/comment"
                 rtoken:
                   $ref: "#/components/schemas/rtoken"
                 category:
@@ -195,13 +195,16 @@ paths:
               type: object
               properties:
                 comment:
-                  $ref: "#/components/schemas/Comment/properties/comment"
+                  $ref: "#/components/schemas/CommentC/properties/comment"
                 rtoken:
                   $ref: "#/components/schemas/rtoken"
                 quote:
                   nullable: true
                   anyOf:
-                    - $ref: "#/components/schemas/Comment/properties/id"
+                    - $ref: "#/components/schemas/CommentC/properties/id"
+              required:
+                - comment
+                - rtoken
       responses:
         "200":
           description: "Success"
@@ -211,7 +214,7 @@ paths:
                 type: object
                 properties:
                   id:
-                    $ref: "#/components/schemas/Comment/properties/id"
+                    $ref: "#/components/schemas/CommentC/properties/id"
         "400":
           $ref: "#/components/responses/Invalid"
         "401":
@@ -243,7 +246,7 @@ paths:
           required: true
           description: comment id
           schema:
-            $ref: "#/components/schemas/Comment/properties/id"
+            $ref: "#/components/schemas/CommentC/properties/id"
       responses:
         "200":
           description: "Success"
@@ -279,7 +282,7 @@ paths:
           description: comment id
           required: true
           schema:
-            $ref: "#/components/schemas/Comment/properties/id"
+            $ref: "#/components/schemas/CommentC/properties/id"
       responses:
         "200":
           description: "Success"
@@ -288,7 +291,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Comment"
+                  allOf:
+                    - $ref: "#/components/schemas/Comment"
         "400":
           $ref: "#/components/responses/Invalid"
         "404":
@@ -328,7 +332,7 @@ paths:
           description: comment id
           required: true
           schema:
-            $ref: "#/components/schemas/Comment/properties/id"
+            $ref: "#/components/schemas/CommentC/properties/id"
       responses:
         "200":
           $ref: "#/components/responses/OK"
@@ -470,13 +474,14 @@ components:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/Comment/properties/id"
+          $ref: "#/components/schemas/CommentC/properties/id"
         removed:
           type: boolean
           enum:
             - true
-    Comment:
+    CommentC:
       type: object
+      description: "Comment objet with constants only (without upvotes, downvotes and replies)"
       properties:
         id:
           type: integer
@@ -507,7 +512,7 @@ components:
           nullable: true
           description: The whole comment object of the quoted comment.
           anyOf:
-            - $ref: "#/components/schemas/Comment"
+            - $ref: "#/components/schemas/CommentC"
           example:
             id: 1
             user:
@@ -519,26 +524,32 @@ components:
             text: "This is a comment"
             createdAt: "2020-01-01T00:00:00Z"
             slink: "https://l.metahkg.org/p994Nw2"
-        D:
-          nullable: true
-          type: integer
-          format: int64
-          minimum: 0
-          description: number of downvotes
-        U:
-          nullable: true
-          type: integer
-          format: int64
-          minimum: 0
-          description: number of upvotes
-        replies:
-          nullable: true
-          type: array
-          items:
-            type: integer
-            minimum: 1
-            format: int64
-          description: list of comment ids that are replies to this comment
+    Comment:
+      allOf:
+        - $ref: "#/components/schemas/CommentC"
+        - type: object
+          properties:
+            D:
+              nullable: true
+              type: integer
+              format: int64
+              minimum: 0
+              description: number of downvotes
+            U:
+              nullable: true
+              type: integer
+              format: int64
+              minimum: 0
+              description: number of upvotes
+            replies:
+              nullable: true
+              type: array
+              items:
+                type: integer
+                minimum: 1
+                format: int64
+              description: list of comment ids that are replies to this comment
+        
     Thread:
       type: object
       properties:
@@ -590,7 +601,7 @@ components:
           description: pinned comment
           nullable: true
           anyOf:
-            - $ref: "#/components/schemas/Comment"
+            - $ref: "#/components/schemas/CommentC"
     rtoken:
       type: string
       description: Recaptcha token. See https://developers.google.com/recaptcha/docs/verify.
