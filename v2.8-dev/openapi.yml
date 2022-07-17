@@ -528,6 +528,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/CommentC"
         - type: object
+          description: Comment object
           properties:
             D:
               nullable: true
