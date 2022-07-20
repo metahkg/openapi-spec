@@ -1,7 +1,7 @@
 # Metahkg OpenApi Spec
 
-OpenApi Specification files of metahkg.
-See [metahkg-server](https://gitlab.com/metahkg/metahkg-server) for the server-side source code.
+Archives of the OpenApi Specification files of metahkg.
+See [metahkg-server](https://gitlab.com/metahkg/metahkg-server) for the newest version.
 
 All versions of our api are on the same branch here, in its own directory.
 

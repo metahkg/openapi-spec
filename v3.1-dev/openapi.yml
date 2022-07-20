@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "2.8-dev"
+  version: "3.1.0-dev"
   title: Metahkg Api
   description:
     "The Metahkg Api is a REST api written in fastify/typescript, with MongoDB as the database.
@@ -39,7 +39,7 @@ paths:
         - thread
       summary: Get thread
       description: "Get a selection of comments and other data from a thread.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/thread.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/thread.ts)"
       operationId: getThread
       parameters:
         - in: path
@@ -127,7 +127,7 @@ paths:
         - thread
       summary: Create thread
       description: "Create a thread. Authentication is required.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/create.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/create.ts)"
       operationId: createThread
       requestBody:
         content:
@@ -179,7 +179,7 @@ paths:
       summary: Create comment
       description: "Create a new comment in the specified thread.
         Authentication is required.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/create.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/create.ts)"
       operationId: CreateComment
       parameters:
         - in: path
@@ -233,7 +233,7 @@ paths:
         - comment
       summary: Get comment
       description: "Get a comment from a thread with thread id and comment id.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/comment.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/comment.ts)"
       parameters:
         - in: path
           name: id
@@ -267,9 +267,8 @@ paths:
       tags:
         - comment
       summary: Get replies
-      description:
-        "Get the full comment objects of replies to the specified comment.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/replies.ts)"
+      description: "Get the full comment objects of replies to the specified comment.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/replies.ts)"
       parameters:
         - in: path
           name: id
@@ -311,7 +310,7 @@ paths:
         - bearerAuth: []
       summary: Vote on comment
       description: "Vote on a comment. Authentication is required.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/comment/vote.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/vote.ts)"
       requestBody:
         content:
           application/json:
@@ -358,7 +357,7 @@ paths:
         - thread
       summary: Check if a thread exists
       description: "Check if a thread exists.
-        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/2.8.1-dev/src/routes/thread/checkExist.ts)"
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/checkExist.ts)"
       parameters:
         - in: query
           name: id
@@ -375,7 +374,118 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
+  /thread/{id}/images:
+    get:
+      tags:
+        - thread
+      deprecated: true
+      summary: Get thread images
+      description: "
+        > **_Deprecated_**: Use `/thread/{id}` instead.
+        Get the images of a thread.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/images.ts)"
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+      responses:
+        "200":
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Images"
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "404":
+          description: "Thread not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /thread/{id}/comment/{cid}/pin:
+    put:
+      tags:
+        - thread
+      security:
+        - bearerAuth: []
+      summary: Pin comment
+      description: "Pin a comment in a thread. Authentication is required.
+        Works only if the user is the original poster of the thread.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/pin.ts)"
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+        - in: path
+          name: cid
+          description: comment id
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommentC/properties/id"
+      responses:
+        "200":
+          $ref: "#/components/responses/OK"
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "Thread or comment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          $ref: "#/components/responses/CommentRemoved"
+  /thread/{id}/comment/{cid}/unpin:
+    put:
+      tags:
+        - thread
+      security:
+        - bearerAuth: []
+      summary: Unpin comment
+      description: "Unpin a pinned comment in a thread. Authentication is required.
+        Works only if the user is the original poster of the thread.
+        [Source](https://gitlab.com/metahkg/metahkg-server/-/blob/3.1.0-dev/src/routes/thread/comment/unpin.ts)"
+      parameters:
+        - in: path
+          name: id
+          description: thread id
+          required: true
+          schema:
+            $ref: "#/components/schemas/Thread/properties/id"
+        - in: path
+          name: cid
+          description: comment id
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommentC/properties/id"
+      responses:
+        "200":
+          $ref: "#/components/responses/OK"
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "Thread or comment not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: "Comment not pinned"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 servers:
   - url: https://dev.metahkg.org/api
 
@@ -470,6 +580,21 @@ components:
           type: string
           description: category name
           example: "Chit-chat"
+    Image:
+      type: object
+      properties:
+        cid:
+          $ref: "#/components/schemas/CommentC/properties/id"
+        src:
+          type: string
+          format: uri
+          description: image source url
+          example: "https://images.unsplash.com/photo-1459478309853-2c33a60058e7"
+    Images:
+      type: array
+      description: List of images in comments. Duplicated images (with the same url) are not included.
+      items:
+        $ref: "#/components/schemas/Image"
     RemovedComment:
       type: object
       properties:
@@ -481,7 +606,15 @@ components:
             - true
     CommentC:
       type: object
-      description: "Comment objet with constants only (without upvotes, downvotes and replies)"
+      description: "Comment object with constants only (without upvotes, downvotes and replies)"
+      required:
+        - id
+        - user
+        - comment
+        - text
+        - images
+        - createdAt
+        - slink
       properties:
         id:
           type: integer
@@ -500,6 +633,10 @@ components:
           type: string
           description: comment converted to plain text
           example: "This is a comment"
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image/properties/src"
         createdAt:
           type: string
           format: date-time
@@ -550,9 +687,20 @@ components:
                 minimum: 1
                 format: int64
               description: list of comment ids that are replies to this comment
-        
     Thread:
       type: object
+      required:
+        - id
+        - title
+        - category
+        - op
+        - c
+        - conversation
+        - images
+        - createdAt
+        - lastModified
+        - slink
+        - score
       properties:
         id:
           type: integer
@@ -586,6 +734,12 @@ components:
                         type: integer
                         format: int64
                         description: score of the comment (`upvotes - downvotes`)
+        score:
+          type: integer
+          format: int64
+          description: score of the thread (first comment) (`upvotes - downvotes`)
+        images:
+          $ref: "#/components/schemas/Images"
         createdAt:
           type: string
           format: date-time
