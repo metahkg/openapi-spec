@@ -1,1 +1,1 @@
-*.yml *.yaml 301
+*.yml :splat.yaml 301
