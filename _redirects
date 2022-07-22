@@ -1,1 +1,1 @@
-/v2.7-dev/* /v2.8-dev/:splat 301
+*.yml *.yaml 301
