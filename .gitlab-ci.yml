@@ -1,3 +1,22 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+  - review
+  - dast
+  - fuzz
+  - staging
+  - canary
+  - production
+  - incremental rollout 10%
+  - incremental rollout 25%
+  - incremental rollout 50%
+  - incremental rollout 100%
+  - performance
+  - cleanup
+  - update
+
 # pass branch variable from upstream
 update:
   image: node:18-alpine
