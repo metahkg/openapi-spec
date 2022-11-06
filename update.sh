@@ -12,6 +12,6 @@ else
   mkdir "$minor" && mv openapi.yaml "${minor}";
 fi;
 
-export minor="$minor"
+export version="$minor"
 
 rm -f openapi.yaml;
