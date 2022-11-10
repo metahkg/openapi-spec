@@ -1199,7 +1199,7 @@ paths:
     get:
       tags:
         - me
-      operationId: meSession
+      operationId: meSessionCurrent
       security:
         - bearerAuth: []
       summary: Get current logged in session
@@ -1256,7 +1256,7 @@ paths:
     get:
       tags:
         - me
-      operationId: meSessionsGet
+      operationId: meSession
       security:
         - bearerAuth: []
       summary: Get session by id
@@ -1299,7 +1299,7 @@ paths:
     delete:
       tags:
         - me
-      operationId: meSessionsRevoke
+      operationId: meSessionRevoke
       security:
         - bearerAuth: []
       summary: Revoke session by id
